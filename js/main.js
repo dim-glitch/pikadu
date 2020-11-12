@@ -16,6 +16,11 @@ const emailInput = document.querySelector('.login-email');
 const passwordInput = document.querySelector('.login-password');
 const loginSignup = document.querySelector('.login-signup');
 
+const userElem = document.querySelector('.user');
+const userNameElem = document.querySelector('.user-name');
+
+
+
 const listUsers = [{
     id: '01',
     email: 'razik_d@mail.ru',
@@ -32,23 +37,63 @@ const listUsers = [{
 
 const setUsers = {
   user: null,
-  logIn(email, password) {
-
+  logIn(email, password, handler) {
+    const user = this.getUser(email);
+    if (user && user.password === password) {
+      this.authorizedUser(user)
+      handler();
+    } else {
+      alert('Пользователь с такими данными не найден')
+    }
   },
   logOut() {
     console.log('выход');
   },
-  signUp(email, password) {
-    console.log('регистрация');
+  signUp(email, password, handler) {
+    if (!this.getUser(email)) {
+      const user = {
+        email,
+        password,
+        displayName: email
+      }
+      listUsers.push(user);
+      this.authorizedUser(user)
+      handler();
+    } else {
+      alert('Пользователь с таким email ужу зарегистрирован')
+    }
+  },
+  getUser(email) {
+    return listUsers.find(item => item.email === email)
+  },
+  authorizedUser(user) {
+    this.user = user;
   }
 };
+
+const toggleAuthDom = () => {
+  const user = setUsers.user;
+  console.log('user:', user);
+
+  if (user) {
+    loginElem.style.display = 'none';
+    userElem.style.display = '';
+    userNameElem.textContent = user.displayName;
+  } else {
+    loginElem.style.display = '';
+    userElem.style.display = 'none';
+  }
+
+}
+
 loginForm.addEventListener('submit', event => {
   event.preventDefault();
 
   const emailValue = emailInput.value;
   const passwordValue = passwordInput.value;
 
-  setUsers.logIn(emailValue, passwordValue);
+  setUsers.logIn(emailValue, passwordValue, toggleAuthDom);
+
 });
 
 loginSignup.addEventListener('click', event => {
@@ -56,6 +101,8 @@ loginSignup.addEventListener('click', event => {
   const emailValue = emailInput.value;
   const passwordValue = passwordInput.value;
 
-  setUsers.signUp(emailValue, passwordValue);
-  setUsers.signUp();
-})
+  setUsers.signUp(emailValue, passwordValue, toggleAuthDom);
+
+});
+
+toggleAuthDom();
